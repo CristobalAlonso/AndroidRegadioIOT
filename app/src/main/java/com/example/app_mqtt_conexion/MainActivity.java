@@ -97,12 +97,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (MqttException e) {
             e.printStackTrace();
         }
-
-
-
-
-
-
     }
 
     public  void checar_conexion(){
@@ -151,10 +145,10 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     String msg = null;
-                    if(topic.matches("Wl/ldr"))
+                    if(topic.matches("RIOT/DHT22T"))
                     {
                         msg =  new String(message.getPayload());
-                        txt.setText(msg+" lux");
+                        txt.setText(msg+" °C");
                     }
                 }
 
@@ -172,47 +166,24 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    //led 1
+    //Sistema regadio inteligente
     public void publicarD1oN(View view)
     {
-        publish("Wl/01","1");
+        publish("RIOT/01","1");
     }
     public void publicarD1Off(View view)
     {
-        publish("Wl/01","0");
+        publish("RIOT/01","0");
     }
 
-    //led 2
+    //Bomba de agua
     public void publicarD2On(View view)
     {
-        publish("Wl/02","1");
+        publish("RIOT/02","0");
     }
     public void publicarD2Off(View view)
     {
-        publish("Wl/02","0");
+        publish("RIOT/02","1");
     }
-
-    //led 3
-    public void publicarD3On(View view)
-    {
-        publish("Wl/03","1");
-    }
-    public void publicarD3Off(View view)
-    {
-        publish("Wl/03","0");
-    }
-
-    //led 4
-    public void publicarD4On(View view)
-    {
-        publish("Wl/04","1");
-    }
-    public void publicarD4Off(View view)
-    {
-        publish("Wl/04","0");
-    }
-
-
-
 
 }
