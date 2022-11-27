@@ -1,12 +1,22 @@
 package com.example.app_mqtt_conexion;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.os.Build;//para obtener el nombre del dispositivo
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -19,6 +29,9 @@ import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     String nombre_Dispositivo;   //string para obtener el nombre del dispositivo
@@ -41,6 +54,14 @@ public class MainActivity extends AppCompatActivity {
     private TextView textV4;                  //text view para mostrar en interfacve
     private TextView textV5;                  //text view para mostrar en interfacve
 
+    String msg1;
+    String msg2;
+    String msg3;
+    String msg4;
+    String msg5;
+
+    Button btnSend;
+
 
    @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +83,14 @@ public class MainActivity extends AppCompatActivity {
        textV3 = findViewById(R.id.CO);
        textV4 = findViewById(R.id.humedadAmbiental);
        textV5 = findViewById(R.id.temperaturaAmbiente);
+
+       msg1 ="";
+       msg2 ="";
+       msg3 ="";
+       msg4 ="";
+       msg5 ="";
+
+       btnSend = findViewById(R.id.btnSend);
 
     }
     private void obtener_nombre_Dispositivo() {
@@ -159,11 +188,6 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
 
-                    String msg1;
-                    String msg2;
-                    String msg3;
-                    String msg4;
-                    String msg5;
 
                     if(topic.matches(topic1))
                     {
@@ -206,6 +230,55 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void insertPHP(String URL, String humTierra, String co2, String co, String humAmbiental, String tempAmbiental)
+    {
+        String url = "http://192.168.1.85/sensor/insertar.php";
+        RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+
+       StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+           @Override
+           public void onResponse(String response) {
+               if(!response.isEmpty()){
+                   Toast.makeText(MainActivity.this, "Dato guardado", Toast.LENGTH_LONG).show();
+               }
+
+               else{
+                   Toast.makeText(MainActivity.this, "Dato no guardado", Toast.LENGTH_LONG).show();
+               }
+           }
+       }, new Response.ErrorListener() {
+           @Override
+           public void onErrorResponse(VolleyError error) {
+               Toast.makeText(MainActivity.this, error.toString()+" "+URL, Toast.LENGTH_SHORT).show();
+
+           }
+       }){
+           @NonNull
+           @Override
+           protected Map<String, String> getParams() throws AuthFailureError {
+               Map<String, String> params =  new HashMap<String,String>();
+               //sub("RIOT/humT", "RIOT/MQ135","RIOT/MQ7","RIOT/DHT22H","RIOT/DHT22T");
+               params.put("hum_tierra", humTierra.toString());
+               params.put("co2", co2.toString());
+               params.put("co", co.toString());
+               params.put("hum_ambiental", humAmbiental.toString());
+               params.put("temp_ambiental",tempAmbiental.toString());
+
+               return params;
+           }
+       };
+
+
+        requestQueue.add(stringRequest);
+    }
+
+    public void sendData(View view)
+    {
+        insertPHP("http://192.168.1.85/sensor/insertar.php",msg1,msg2,msg3,msg4,msg5);
+    }
+
+
+
     /*
     //Sistema regadio inteligente
     public void publicarD1oN(View view)
@@ -226,7 +299,7 @@ public class MainActivity extends AppCompatActivity {
     {
         publish("RIOT/02","1");
     }
-    
+
      */
 
 }
