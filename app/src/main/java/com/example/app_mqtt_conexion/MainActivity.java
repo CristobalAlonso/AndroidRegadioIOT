@@ -29,19 +29,24 @@ public class MainActivity extends AppCompatActivity {
 
     //parametros del broker la siguiente variable con el broker de shiftr.io
     static String MQTTHOST = "tcp://68.183.119.177"; //el broker
-    //static String USERNAME = "accesobroker";          //el token de acceso
-    //static String PASSWORD = "zxcvbnmz";             //la contraceña del token
+    //static String USERNAME = "accesobroker";          //el token de acceso.
+    //static String PASSWORD = "zxcvbnmz";             //la contraceña del token.
 
     MqttAndroidClient client;              //  clienteMQTT este dispositivo
     MqttConnectOptions options;            // para meter parametros a la conexion
-    private TextView txt;                  //text view para mostrar en interfacve
+
+    private TextView textV1;                  //text view para mostrar en interfacve
+    private TextView textV2;                  //text view para mostrar en interfacve
+    private TextView textV3;                  //text view para mostrar en interfacve
+    private TextView textV4;                  //text view para mostrar en interfacve
+    private TextView textV5;                  //text view para mostrar en interfacve
 
 
    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//obtenemos el nombre del Dispositivo
+        //obtenemos el nombre del Dispositivo
        //obtenemos el nombre del Dispositivo
        obtener_nombre_Dispositivo();
        //para conextar al broker   //generamos un clienteMQTT
@@ -52,7 +57,11 @@ public class MainActivity extends AppCompatActivity {
        //options.setUserName(USERNAME);
        //options.setPassword(PASSWORD.toCharArray());
        checar_conexion();//revisamos la conexion
-       txt = findViewById(R.id.textView);
+       textV1 = findViewById(R.id.humedadTierr);
+       textV2 = findViewById(R.id.CO2);
+       textV3 = findViewById(R.id.CO);
+       textV4 = findViewById(R.id.humedadAmbiental);
+       textV5 = findViewById(R.id.temperaturaAmbiente);
 
     }
     private void obtener_nombre_Dispositivo() {
@@ -81,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onSuccess(IMqttToken asyncActionToken) {
                     // mensaje de conectado
                     Toast.makeText(getBaseContext(), "Conectado ", Toast.LENGTH_SHORT).show();
-                    sub("Wl/ldr");
+                    sub("RIOT/humT", "RIOT/MQ135","RIOT/MQ7","RIOT/DHT22H","RIOT/DHT22T");
                 }
 
                 @Override//si falla la conexion
@@ -131,11 +140,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void sub(String topic)
+    public void sub(String topic1, String topic2, String topic3, String topic4, String topic5)
     {
         try
         {
-            client.subscribe(topic, 0);
+            client.subscribe(topic1, 0);
+            client.subscribe(topic2, 0);
+            client.subscribe(topic3, 0);
+            client.subscribe(topic4, 0);
+            client.subscribe(topic5, 0);
+
             client.setCallback(new MqttCallback() {
                 @Override
                 public void connectionLost(Throwable cause) {
@@ -144,11 +158,37 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
-                    String msg = null;
-                    if(topic.matches("RIOT/DHT22T"))
+
+                    String msg1;
+                    String msg2;
+                    String msg3;
+                    String msg4;
+                    String msg5;
+
+                    if(topic.matches(topic1))
                     {
-                        msg =  new String(message.getPayload());
-                        txt.setText(msg+" °C");
+                         msg1 =  new String(message.getPayload());
+                        textV1.setText(msg1+" %");
+                    }
+                    if(topic.matches(topic2))
+                    {
+                         msg2 =  new String(message.getPayload());
+                        textV2.setText(msg2+" PPM");
+                    }
+                    if(topic.matches(topic3))
+                    {
+                         msg3 =  new String(message.getPayload());
+                        textV3.setText(msg3+" PPM");
+                    }
+                    if(topic.matches(topic4))
+                    {
+                         msg4 =  new String(message.getPayload());
+                        textV4.setText(msg4+" %");
+                    }
+                    if(topic.matches(topic5))
+                    {
+                         msg5 =  new String(message.getPayload());
+                        textV5.setText(msg5+" °C");
                     }
                 }
 
@@ -166,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /*
     //Sistema regadio inteligente
     public void publicarD1oN(View view)
     {
@@ -185,5 +226,7 @@ public class MainActivity extends AppCompatActivity {
     {
         publish("RIOT/02","1");
     }
+    
+     */
 
 }
