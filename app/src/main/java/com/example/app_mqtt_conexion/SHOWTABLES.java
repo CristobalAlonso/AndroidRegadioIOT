@@ -3,6 +3,7 @@ package com.example.app_mqtt_conexion;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -38,6 +39,7 @@ public class SHOWTABLES extends AppCompatActivity {
         txt = findViewById(R.id.textView);
         txt.setText("");
         getData();
+        txt.setMovementMethod(new ScrollingMovementMethod());
 
 
         Toast.makeText(getApplicationContext(), txt.getText(), Toast.LENGTH_SHORT).show();
