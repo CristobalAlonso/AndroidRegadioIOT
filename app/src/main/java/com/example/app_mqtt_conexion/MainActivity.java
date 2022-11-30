@@ -102,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
        textV3 = findViewById(R.id.CO);
        textV4 = findViewById(R.id.humedadAmbiental);
        textV5 = findViewById(R.id.temperaturaAmbiente);
+       //add new icon
 
        msg1 ="";
        msg2 ="";
