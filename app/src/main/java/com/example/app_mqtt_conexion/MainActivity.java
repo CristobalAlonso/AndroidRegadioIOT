@@ -3,10 +3,12 @@ package com.example.app_mqtt_conexion;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Build;//para obtener el nombre del dispositivo
 import android.view.View;
 import android.widget.Button;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
     MqttAndroidClient client;              //  clienteMQTT este dispositivo
     MqttConnectOptions options;            // para meter parametros a la conexion
 
+
+
     private TextView textV1;                  //text view para mostrar en interfacve
     private TextView textV2;                  //text view para mostrar en interfacve
     private TextView textV3;                  //text view para mostrar en interfacve
@@ -59,8 +63,13 @@ public class MainActivity extends AppCompatActivity {
     String msg3;
     String msg4;
     String msg5;
+    String msg6;
+    String msg7;
 
     Button btnSend;
+    Button btnChangeActivity;
+    Button btnChangeActivityConfig;
+    Switch sw;
 
 
    @Override
@@ -89,8 +98,60 @@ public class MainActivity extends AppCompatActivity {
        msg3 ="";
        msg4 ="";
        msg5 ="";
+       msg6 ="";
+       msg7 ="";
 
        btnSend = findViewById(R.id.btnSend);
+       btnChangeActivity = findViewById(R.id.btnActivity2);
+       btnChangeActivityConfig = findViewById(R.id.btnConfig);
+       sw = findViewById(R.id.sw);
+
+       sw.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View view)
+           {
+               if(sw.isChecked())
+               {
+                   publish("RIOT/02","1");
+                   sw.setChecked(true);
+
+               }else
+               {
+                   publish("RIOT/02","0");
+                   sw.setChecked(false);
+               }
+           }
+       });
+
+       btnChangeActivity.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View view) {
+               /*try {
+                   client.disconnect();
+               }catch (MqttException e){
+                   Toast.makeText(getBaseContext(), "Error al desconectar", Toast.LENGTH_SHORT).show();
+               }*/
+               Intent switchActivityIntent = new Intent(getApplicationContext(), SHOWTABLES.class);
+               startActivity(switchActivityIntent);
+           }
+       });
+
+       btnChangeActivityConfig.setOnClickListener(new View.OnClickListener() {
+
+           @Override
+           public void onClick(View view) {
+               /*try {
+                   client.disconnect();
+                   Toast.makeText(getBaseContext(), "Desconectado", Toast.LENGTH_SHORT).show();
+               }catch (MqttException e){
+                   Toast.makeText(getBaseContext(), "Error al desconectar", Toast.LENGTH_SHORT).show();
+               }*/
+               Intent switchActivityIntent = new Intent(getApplicationContext(), Config.class);
+               startActivity(switchActivityIntent);
+           }
+       });
+
+
 
     }
     private void obtener_nombre_Dispositivo() {
@@ -112,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
         //options.setUserName(USERNAME);
         //options.setPassword(PASSWORD.toCharArray());
         try {
+
             IMqttToken token = client.connect(options);//intenta la conexion
             token.setActionCallback(new IMqttActionListener() {
 
@@ -119,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onSuccess(IMqttToken asyncActionToken) {
                     // mensaje de conectado
                     Toast.makeText(getBaseContext(), "Conectado ", Toast.LENGTH_SHORT).show();
-                    sub("RIOT/humT", "RIOT/MQ135","RIOT/MQ7","RIOT/DHT22H","RIOT/DHT22T");
+                    sub("RIOT/humT", "RIOT/MQ135","RIOT/MQ7","RIOT/DHT22H","RIOT/DHT22T", "RIOT/BAA", "RIOT/02");
                 }
 
                 @Override//si falla la conexion
@@ -169,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void sub(String topic1, String topic2, String topic3, String topic4, String topic5)
+    public void sub(String topic1, String topic2, String topic3, String topic4, String topic5,String topic6,String topic7)
     {
         try
         {
@@ -178,6 +240,8 @@ public class MainActivity extends AppCompatActivity {
             client.subscribe(topic3, 0);
             client.subscribe(topic4, 0);
             client.subscribe(topic5, 0);
+            client.subscribe(topic6, 0);
+            client.subscribe(topic7, 0);
 
             client.setCallback(new MqttCallback() {
                 @Override
@@ -186,12 +250,14 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void messageArrived(String topic, MqttMessage message) throws Exception {
+                public void messageArrived(String topic, MqttMessage message) throws Exception
+                {
 
 
                     if(topic.matches(topic1))
                     {
                          msg1 =  new String(message.getPayload());
+                         msg1 = castPercert(500,Integer.parseInt(""+msg1));
                         textV1.setText(msg1+" %");
                     }
                     if(topic.matches(topic2))
@@ -213,6 +279,29 @@ public class MainActivity extends AppCompatActivity {
                     {
                          msg5 =  new String(message.getPayload());
                         textV5.setText(msg5+" °C");
+                    }
+                    if(topic.matches(topic6))
+                    {
+                        msg6 =  new String(message.getPayload());
+                        if(msg6.matches("1"))
+                        {
+                            Toast.makeText(getApplicationContext(), "La planta se esta regando", Toast.LENGTH_LONG).show();
+                            insertPHP("http://192.168.1.85/sensor/insertar.php",msg1,msg2,msg3,msg4,msg5);
+                        }
+
+                    }
+                    if(topic.matches(topic7))
+                    {
+                        msg7 =  new String(message.getPayload());
+                        if(msg7.matches("1"))
+                        {
+                            sw.setChecked(true);
+                        }
+                        if(msg7.matches("0"))
+                        {
+                            sw.setChecked(false);
+                        }
+
                     }
                 }
 
@@ -274,6 +363,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void sendData(View view)
     {
+        publish("RIOT/01","1");
+        Toast.makeText(MainActivity.this, "La planta se esta regando", Toast.LENGTH_LONG).show();
         insertPHP("http://192.168.1.85/sensor/insertar.php",msg1,msg2,msg3,msg4,msg5);
     }
 
@@ -301,5 +392,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
      */
+    public String castPercert(int max, int number)
+    {
+        String res;
+        number = number - 1000;
+        number = number*-1;
+        number = number*100;
+        number = number/500;
 
+
+        if(number<=0){
+            number=0;
+        }
+        if(number>100){
+            number=100;
+        }
+        res = ""+number;
+        return res;
+    }
 }
