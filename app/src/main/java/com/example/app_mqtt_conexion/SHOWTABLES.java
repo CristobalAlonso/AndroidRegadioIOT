@@ -71,7 +71,7 @@ public class SHOWTABLES extends AppCompatActivity {
                         txt.append("CO :"+objeto.getString("co")+" PPM\n");
                         txt.append("Humedad ambiental :"+objeto.getString("hum_ambiental")+"%\n");
                         txt.append("Temperatura ambiental :"+objeto.getString("tem_ambiental")+"%\n");
-                        txt.append(" "+"\n");
+                        txt.append("__________________________________________"+"\n");
                     }
 
 
