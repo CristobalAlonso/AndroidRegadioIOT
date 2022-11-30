@@ -6,8 +6,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Build;//para obtener el nombre del dispositivo
+import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     MqttAndroidClient client;              //  clienteMQTT este dispositivo
     MqttConnectOptions options;            // para meter parametros a la conexion
 
+    LinearLayout ln;
 
 
     private TextView textV1;                  //text view para mostrar en interfacve
@@ -65,6 +69,12 @@ public class MainActivity extends AppCompatActivity {
     String msg5;
     String msg6;
     String msg7;
+
+    ProgressBar pb1;
+    ProgressBar pb2;
+    ProgressBar pb3;
+    ProgressBar pb4;
+    ProgressBar pb5;
 
     Button btnSend;
     Button btnChangeActivity;
@@ -101,6 +111,14 @@ public class MainActivity extends AppCompatActivity {
        msg6 ="";
        msg7 ="";
 
+       pb1 = findViewById(R.id.pbHum);
+       pb2 = findViewById(R.id.pbCO2);
+       pb3 = findViewById(R.id.pbCO);
+       pb4 = findViewById(R.id.pbHumAmbient);
+       pb5 = findViewById(R.id.pbTempAmbient);
+
+        ln = findViewById(R.id.linearLayout);
+
        btnSend = findViewById(R.id.btnSend);
        btnChangeActivity = findViewById(R.id.btnActivity2);
        btnChangeActivityConfig = findViewById(R.id.btnConfig);
@@ -114,11 +132,13 @@ public class MainActivity extends AppCompatActivity {
                {
                    publish("RIOT/02","1");
                    sw.setChecked(true);
+                   btnSend.setVisibility(View.INVISIBLE);
 
                }else
                {
                    publish("RIOT/02","0");
                    sw.setChecked(false);
+                   btnSend.setVisibility(View.VISIBLE);
                }
            }
        });
@@ -259,26 +279,58 @@ public class MainActivity extends AppCompatActivity {
                          msg1 =  new String(message.getPayload());
                          msg1 = castPercert(500,Integer.parseInt(""+msg1));
                         textV1.setText(msg1+" %");
+                        if(intTryParse(msg1)){
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                pb1.setProgress(Integer.parseInt(msg1),false);
+                            }
+                        }
+
                     }
                     if(topic.matches(topic2))
                     {
                          msg2 =  new String(message.getPayload());
                         textV2.setText(msg2+" PPM");
+                        if(intTryParse(msg2)){
+                            int x = Integer.parseInt(msg2);
+                            x = (int)x/10;
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                pb2.setProgress(x,false);
+                            }
+                        }
                     }
                     if(topic.matches(topic3))
                     {
                          msg3 =  new String(message.getPayload());
                         textV3.setText(msg3+" PPM");
+                        if(intTryParse(msg3)){
+                            int x = Integer.parseInt(msg3);
+                            x = (int)x/10;
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                pb3.setProgress(x,false);
+                            }
+                        }
                     }
                     if(topic.matches(topic4))
                     {
                          msg4 =  new String(message.getPayload());
                         textV4.setText(msg4+" %");
+                        if(floatTryParse(msg4)){
+                            int x = (int)Float.parseFloat(msg4);
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                pb4.setProgress(x,false);
+                            }
+                        }
                     }
                     if(topic.matches(topic5))
                     {
                          msg5 =  new String(message.getPayload());
                         textV5.setText(msg5+" °C");
+                        if(floatTryParse(msg5)){
+                            int x = (int)Float.parseFloat(msg5);
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                pb5.setProgress(x,false);
+                            }
+                        }
                     }
                     if(topic.matches(topic6))
                     {
@@ -296,10 +348,13 @@ public class MainActivity extends AppCompatActivity {
                         if(msg7.matches("1"))
                         {
                             sw.setChecked(true);
+                            btnSend.setVisibility(View.INVISIBLE);
+
                         }
                         if(msg7.matches("0"))
                         {
                             sw.setChecked(false);
+                            btnSend.setVisibility(View.VISIBLE);
                         }
 
                     }
@@ -408,6 +463,34 @@ public class MainActivity extends AppCompatActivity {
             number=100;
         }
         res = ""+number;
+        return res;
+    }
+
+    public boolean intTryParse(String str)
+    {
+        int response = 0;
+        boolean res = false;
+        try {
+            response = Integer.parseInt(str);
+            res =true;
+        }catch (Exception e)
+        {
+            res = false;
+        }
+        return res;
+    }
+
+    public boolean floatTryParse(String str)
+    {
+        float response = 0;
+        boolean res = false;
+        try {
+            response = Float.parseFloat(str);
+            res =true;
+        }catch (Exception e)
+        {
+            res = false;
+        }
         return res;
     }
 }
